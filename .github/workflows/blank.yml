@@ -27,7 +27,7 @@ jobs:
           
       - name: Decode google-services.json
         env:
-          FIREBASE_SECRET: ${{ secrets.NMEDIA_SECRET }}
+          NMEDIA_SECRET: ${{ secrets.NMEDIA_SECRET }}
         run: echo $NMEDIA_SECRET > app/google-services.json
 
       - name: Run unit testing
