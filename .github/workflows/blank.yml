@@ -24,3 +24,12 @@ jobs:
         with:
           name: app-debug.apk  
           path: app/build/outputs/apk/debug/app-debug.apk
+          
+      - name: Decode google-services.json
+        env:
+          FIREBASE_SECRET: ${{ secrets.NMEDIA_SECRET }}
+        run: echo $NMEDIA_SECRET > app/google-services.json
+
+      - name: Run unit testing
+        run:
+         ./gradlew test
