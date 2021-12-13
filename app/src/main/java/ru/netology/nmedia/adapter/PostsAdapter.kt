@@ -55,13 +55,14 @@ class PostViewHolder(
                 .timeout(10_000)
                 .into(avatar)
 
-            Glide.with(attachment)
-                .load("http://10.0.2.2:9999/images/${post.attachment?.url}")
-                .timeout(10_000)
-                .into(attachment)
+            if(post.attachment != null) {
+                Glide.with(attachment)
+                    .load("http://10.0.2.2:9999/images/${post.attachment?.url}")
+                    .timeout(10_000)
+                    .into(attachment)
 
-            if (post.attachment != null) attachment.visibility = View.VISIBLE
-
+                attachment.visibility = View.VISIBLE
+            }
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
