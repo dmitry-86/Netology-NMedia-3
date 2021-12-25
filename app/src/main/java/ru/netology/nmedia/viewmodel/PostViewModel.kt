@@ -88,54 +88,24 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value = edited.value?.copy(content = text)
     }
 
-    fun likeById(id: Long) {
-//        repository.likeById(id, object : PostRepository.Callback<Post> {
-//            override fun onSuccess(post: Post) {
-//                _data.postValue(
-//                    _data.value?.copy(posts = _data.value?.posts.orEmpty()
-//                        .map {
-//                            if (it.id == id) post else it
-//                        }
-//                    )
-//                )
-//            }
-//            override fun onError(e: Exception) {
-//                _data.postValue(FeedModel(error = true))
-//
-//            }
-//        })
+    fun likeById(id: Long) = viewModelScope.launch {
+        try {
+            _dataState.value = FeedModelState(loading = true)
+            repository.likeById(id)
+            _dataState.value = FeedModelState()
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
+        }
     }
 
-    fun unlikeById(id: Long) {
-//        repository.unlikeById(id, object : PostRepository.Callback<Post> {
-//            override fun onSuccess(post: Post) {
-//                _data.postValue(
-//                    _data.value?.copy(posts = _data.value?.posts.orEmpty()
-//                        .map {
-//                            if (it.id == id) post else it
-//                        }
-//                    )
-//                )
-//            }
-//
-//            override fun onError(e: Exception) {
-//                _data.postValue(FeedModel(error = true))
-//            }
-//        })
+    fun removeById(id: Long)  = viewModelScope.launch {
+        try {
+            _dataState.value = FeedModelState(loading = true)
+            repository.removeById(id)
+            _dataState.value = FeedModelState()
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
+        }
     }
 
-    fun removeById(id: Long) {
-//        repository.removeById(id, object : PostRepository.Callback<Unit> {
-//            override fun onSuccess(post: Unit) {
-//                _data.postValue(
-//                    _data.value?.copy(posts = _data.value?.posts.orEmpty()
-//                        .filter { it.id != id }
-//                    )
-//                )
-//            }
-//            override fun onError(e: Exception) {
-//                _data.postValue(FeedModel(error = true))
-//            }
-//        })
-    }
 }

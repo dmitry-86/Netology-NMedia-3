@@ -34,7 +34,6 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                //if (!post.likedByMe) viewModel.likeById(post.id) else viewModel.unlikeById(post.id)
                 viewModel.likeById(post.id)
             }
 
@@ -71,6 +70,10 @@ class FeedFragment : Fragment() {
                     .show()
             }
         })
+
+        binding.retryButton.setOnClickListener {
+            viewModel.loadPosts()
+        }
 
         binding.swiperefresh.setOnRefreshListener {
             viewModel.refreshPosts()
