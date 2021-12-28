@@ -90,5 +90,22 @@
         android:layout_gravity="bottom|end"
         app:srcCompat="@drawable/ic_add_24dp" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/newPosts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorPrimary"
+        android:layout_gravity="top|center"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="new posts"
+        app:cornerRadius="@dimen/common_spacing"
+        app:icon="@drawable/ic_baseline_arrow_upward_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
