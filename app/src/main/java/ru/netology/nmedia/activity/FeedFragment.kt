@@ -1,5 +1,6 @@
 package ru.netology.nmedia.activity
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -21,6 +22,7 @@ class FeedFragment : Fragment() {
 
     private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
 
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -70,6 +72,20 @@ class FeedFragment : Fragment() {
                     .show()
             }
         })
+
+        viewModel.newerCount.observe(viewLifecycleOwner) {
+            with(binding.newPosts) {
+                if (it > 0) {
+                    text = "${getString(R.string.new_posts)} - $it"
+                    visibility = View.VISIBLE
+                }
+            }
+        }
+
+        binding.newPosts.setOnClickListener {
+            binding.newPosts.visibility = View.GONE
+            viewModel.loadNewPosts()
+        }
 
         binding.retryButton.setOnClickListener {
             viewModel.loadPosts()
