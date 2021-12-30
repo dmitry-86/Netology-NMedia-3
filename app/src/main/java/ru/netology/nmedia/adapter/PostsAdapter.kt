@@ -12,8 +12,11 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.view.loadCircleCrop
+import ru.netology.nmedia.BuildConfig
 
 interface OnInteractionListener {
+    fun onImage(post: Post) {}
     fun onLike(post: Post) {}
     fun onEdit(post: Post) {}
     fun onRemove(post: Post) {}
@@ -44,6 +47,7 @@ class PostViewHolder(
             author.text = post.author
             published.text = post.published
             content.text = post.content
+            avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
 
@@ -55,13 +59,18 @@ class PostViewHolder(
                 .timeout(10_000)
                 .into(avatar)
 
-            if(post.attachment != null) {
-                Glide.with(attachment)
-                    .load("http://10.0.2.2:9999/images/${post.attachment?.url}")
-                    .timeout(10_000)
-                    .into(attachment)
 
-                attachment.visibility = View.VISIBLE
+            if(attachment != null) {
+                when (post.attachment?.type) {
+                    AttachmentType.IMAGE -> {
+
+                        Glide.with(attachment)
+                            .load("http://10.0.2.2:9999/media/${post.attachment?.url}")
+                            .timeout(10_000)
+                            .into(attachment)
+                        attachment.visibility = View.VISIBLE
+                    }
+                }
             }
 
             menu.setOnClickListener {
@@ -90,6 +99,10 @@ class PostViewHolder(
 
             share.setOnClickListener {
                 onInteractionListener.onShare(post)
+            }
+
+            attachment.setOnClickListener {
+                onInteractionListener.onImage(post)
             }
         }
     }
