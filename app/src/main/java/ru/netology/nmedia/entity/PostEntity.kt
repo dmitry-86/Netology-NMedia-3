@@ -17,7 +17,7 @@ data class PostEntity(
     val published: String,
     var likedByMe: Boolean,
     val likes: Int = 0,
-    var viewed: Boolean = true,
+    var viewed: Boolean,
     @Embedded
     var attachment: AttachmentEmbeddable?
 ) {
@@ -45,7 +45,7 @@ data class PostEntity(
                 dto.published,
                 dto.likedByMe,
                 dto.likes,
-                dto.viewed,
+                viewed = true,
                 AttachmentEmbeddable.fromDto(dto.attachment)
             )
     }

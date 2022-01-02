@@ -60,18 +60,18 @@ class PostViewHolder(
                 .into(avatar)
 
 
-            if(attachment != null) {
-                when (post.attachment?.type) {
-                    AttachmentType.IMAGE -> {
 
-                        Glide.with(attachment)
-                            .load("http://10.0.2.2:9999/media/${post.attachment?.url}")
-                            .timeout(10_000)
-                            .into(attachment)
-                        attachment.visibility = View.VISIBLE
-                    }
+            when (post.attachment?.type) {
+                AttachmentType.IMAGE -> {
+
+                    Glide.with(attachment)
+                        .load("http://10.0.2.2:9999/media/${post.attachment?.url}")
+                        .timeout(10_000)
+                        .into(attachment)
                 }
             }
+
+            attachment.visibility = if (post.attachment != null) View.VISIBLE else View.GONE
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
