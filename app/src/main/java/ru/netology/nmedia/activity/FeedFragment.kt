@@ -35,8 +35,13 @@ class FeedFragment : Fragment() {
                 viewModel.edit(post)
             }
 
+            override fun onImage(post: Post) {
+                val bundle = Bundle().apply { putString("url", post.attachment?.url) }
+                findNavController().navigate(R.id.action_feedFragment_to_imageFragment, bundle)
+            }
+
             override fun onLike(post: Post) {
-                if (!post.likedByMe) viewModel.likeById(post.id) else viewModel.dislikeById(post.id)
+                viewModel.likePost(post)
             }
 
             override fun onRemove(post: Post) {
@@ -61,6 +66,7 @@ class FeedFragment : Fragment() {
         viewModel.data.observe(viewLifecycleOwner, { state ->
             adapter.submitList(state.posts)
             binding.emptyText.isVisible = state.empty
+            binding.swiperefresh.isRefreshing
         })
 
         viewModel.dataState.observe(viewLifecycleOwner, { state ->
@@ -87,9 +93,9 @@ class FeedFragment : Fragment() {
             viewModel.loadNewPosts()
         }
 
-        binding.retryButton.setOnClickListener {
-            viewModel.loadPosts()
-        }
+//        binding.retryButton.setOnClickListener {
+//            viewModel.loadPosts()
+//        }
 
         binding.swiperefresh.setOnRefreshListener {
             viewModel.refreshPosts()

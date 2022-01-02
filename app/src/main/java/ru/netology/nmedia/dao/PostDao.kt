@@ -40,8 +40,7 @@ interface PostDao {
                likes = likes - 1,
                likedByMe = 0
            WHERE id = :id AND likedByMe = 1;
-        """,
-    )
+        """)
     suspend fun dislikeById(id: Long)
 
     @Query("UPDATE PostEntity SET viewed = 1 WHERE viewed = 0")
