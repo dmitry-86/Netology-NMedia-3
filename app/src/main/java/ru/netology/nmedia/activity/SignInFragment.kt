@@ -9,7 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.R
 import ru.netology.nmedia.auth.AppAuth
-import ru.netology.nmedia.databinding.SignInFragmentBinding
+import ru.netology.nmedia.databinding.FragmentSignInBinding
 import ru.netology.nmedia.viewmodel.SignInViewModel
 
 class SignInFragment : Fragment() {
@@ -19,12 +19,12 @@ class SignInFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = SignInFragmentBinding.inflate(inflater, container, false)
+        val binding = FragmentSignInBinding.inflate(inflater, container, false)
 
         val viewModel: SignInViewModel by viewModels()
 
         binding.signInButton.setOnClickListener {
-            viewModel.userAuth(
+            viewModel.authUser(
                 binding.logInField.text.toString(),
                 binding.passwordField.text.toString()
             )
