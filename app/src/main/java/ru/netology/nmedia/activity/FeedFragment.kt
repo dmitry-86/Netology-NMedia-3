@@ -1,6 +1,7 @@
 package ru.netology.nmedia.activity
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,11 +17,14 @@ import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
 
 class FeedFragment : Fragment() {
 
     private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+
+    private val authViewModel: AuthViewModel by viewModels()
 
     @SuppressLint("SetTextI18n")
     override fun onCreateView(
@@ -41,7 +45,11 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                viewModel.likePost(post)
+                if(authViewModel.authenticated) {
+                    viewModel.likePost(post)
+               }else {
+                    createDialog()
+                }
             }
 
             override fun onRemove(post: Post) {
@@ -49,15 +57,17 @@ class FeedFragment : Fragment() {
             }
 
             override fun onShare(post: Post) {
-                val intent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT, post.content)
-                    type = "text/plain"
-                }
+                if (authViewModel.authenticated) {
+                    val intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, post.content)
+                        type = "text/plain"
+                    }
 
-                val shareIntent =
-                    Intent.createChooser(intent, getString(R.string.chooser_share_post))
-                startActivity(shareIntent)
+                    val shareIntent =
+                        Intent.createChooser(intent, getString(R.string.chooser_share_post))
+                    startActivity(shareIntent)
+                }
             }
         })
 
@@ -104,12 +114,37 @@ class FeedFragment : Fragment() {
         viewModel.data.observe(viewLifecycleOwner, { state ->
             adapter.submitList(state.posts)
             binding.emptyText.isVisible = state.empty
+
+            val addingNewPost = adapter.itemCount < state.posts.size
+            adapter.submitList(state.posts){
+                if(addingNewPost){
+                    binding.list.scrollToPosition(0)
+                }
+            }
         })
 
         binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            if(authViewModel.authenticated) {
+                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            }else{
+                createDialog()
+            }
         }
 
         return binding.root
     }
+
+    private fun createDialog(){
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("Would you like to sign in?")
+        builder.setNeutralButton("Yes"){dialogInterface, i ->
+            findNavController().navigate(R.id.action_feedFragment_to_signInFragment)
+        }
+        builder.setNegativeButton("No"){dialog, i ->
+            findNavController().navigate(R.id.feedFragment)
+        }
+        builder.show()
+    }
+
+
 }

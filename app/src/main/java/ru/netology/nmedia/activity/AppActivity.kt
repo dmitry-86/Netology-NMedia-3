@@ -1,5 +1,6 @@
 package ru.netology.nmedia.activity
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -8,6 +9,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
@@ -64,18 +66,18 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.signin -> {
-                // TODO: just hardcode it, implementation must be in homework
-                AppAuth.getInstance().setAuth(5, "x-token")
+                findNavController(R.id.nav_host_fragment).navigate(R.id.signInFragment)
+                //AppAuth.getInstance().setAuth(5, "x-token")
                 true
             }
             R.id.signup -> {
-                // TODO: just hardcode it, implementation must be in homework
-                AppAuth.getInstance().setAuth(5, "x-token")
+                //findNavController()
+                //AppAuth.getInstance().setAuth(5, "x-token")
                 true
             }
             R.id.signout -> {
-                // TODO: just hardcode it, implementation must be in homework
                 AppAuth.getInstance().removeAuth()
+                createDialog()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -99,5 +101,14 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         FirebaseMessaging.getInstance().token.addOnSuccessListener {
             println(it)
         }
+    }
+
+    private fun createDialog(){
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("You signed out")
+        builder.setNegativeButton("ok"){dialog, i ->
+            findNavController(R.id.nav_host_fragment).navigate(R.id.feedFragment)
+        }
+        builder.show()
     }
 }

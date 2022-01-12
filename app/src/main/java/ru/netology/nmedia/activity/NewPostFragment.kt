@@ -1,6 +1,7 @@
 package ru.netology.nmedia.activity
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
@@ -16,6 +17,7 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentNewPostBinding
 import ru.netology.nmedia.util.AndroidUtils
 import ru.netology.nmedia.util.StringArg
+import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
 
 class NewPostFragment : Fragment() {
@@ -145,6 +147,4 @@ class NewPostFragment : Fragment() {
         fragmentBinding = null
         super.onDestroyView()
     }
-
-
 }

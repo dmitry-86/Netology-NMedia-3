@@ -30,4 +30,10 @@
     <string name="sign_in">Вход</string>
     <string name="sign_up">Регистрация</string>
     <string name="sign_out">Выход</string>
+    <string name="login">Логин</string>
+    <string name="password">Пароль</string>
+    <string name="enter_your_login">Введите имя пользователя</string>
+    <string name="enter_your_password">Введите пароль</string>
+    <string name="error_auth">Неверное имя пользователя или пароль</string>
+
 </resources>
