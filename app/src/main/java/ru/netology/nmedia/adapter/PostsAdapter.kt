@@ -51,6 +51,8 @@ class PostViewHolder(
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
 
+            menu.visibility = if (post.ownedByMe) View.VISIBLE else View.INVISIBLE
+
             Glide.with(avatar)
                 .load("http://10.0.2.2:9999/avatars/${post.authorAvatar}")
                 .placeholder(R.drawable.ic_loading_100dp)
@@ -59,11 +61,8 @@ class PostViewHolder(
                 .timeout(10_000)
                 .into(avatar)
 
-
-
             when (post.attachment?.type) {
                 AttachmentType.IMAGE -> {
-
                     Glide.with(attachment)
                         .load("http://10.0.2.2:9999/media/${post.attachment?.url}")
                         .timeout(10_000)
@@ -76,6 +75,8 @@ class PostViewHolder(
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
                     inflate(R.menu.options_post)
+
+                    menu.setGroupVisible(R.id.owned, post.ownedByMe)
                     setOnMenuItemClickListener { item ->
                         when (item.itemId) {
                             R.id.remove -> {

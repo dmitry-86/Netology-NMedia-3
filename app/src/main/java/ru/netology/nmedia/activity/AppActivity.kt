@@ -1,17 +1,27 @@
 package ru.netology.nmedia.activity
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
+import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.viewmodel.AuthViewModel
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
+
+    private val viewModel: AuthViewModel by viewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +46,42 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 )
         }
 
+        viewModel.data.observe(this) {
+            invalidateOptionsMenu()
+        }
+
         checkGoogleApiAvailability()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+
+        menu.let {
+            it.setGroupVisible(R.id.unauthenticated, !viewModel.authenticated)
+            it.setGroupVisible(R.id.authenticated, viewModel.authenticated)
+        }
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.signin -> {
+                findNavController(R.id.nav_host_fragment).navigate(R.id.signInFragment)
+                //AppAuth.getInstance().setAuth(5, "x-token")
+                true
+            }
+            R.id.signup -> {
+                findNavController(R.id.nav_host_fragment).navigate(R.id.signUpFragment)
+                //AppAuth.getInstance().setAuth(5, "x-token")
+                true
+            }
+            R.id.signout -> {
+                AppAuth.getInstance().removeAuth()
+                createDialog()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun checkGoogleApiAvailability() {
@@ -56,5 +101,14 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         FirebaseMessaging.getInstance().token.addOnSuccessListener {
             println(it)
         }
+    }
+
+    private fun createDialog(){
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("You signed out")
+        builder.setNegativeButton("ok"){dialog, i ->
+            findNavController(R.id.nav_host_fragment).navigate(R.id.feedFragment)
+        }
+        builder.show()
     }
 }

@@ -145,6 +145,4 @@ class NewPostFragment : Fragment() {
         fragmentBinding = null
         super.onDestroyView()
     }
-
-
 }

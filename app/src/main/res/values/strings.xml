@@ -26,4 +26,16 @@
     <string name="description_take_photo">Take photo</string>
     <string name="description_photo">Photo</string>
     <string name="remove">Remove</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="login">Login</string>
+    <string name="password">Password</string>
+    <string name="enter_your_login">Enter your login</string>
+    <string name="enter_your_password">Enter your password</string>
+    <string name="error_auth">Invalid username or password</string>
+    <string name="name">User name</string>
+    <string name="repeat_your_password">Please repeat your password</string>
+    <string name="password_repeat">Repeat password</string>
+    <string name="enter_your_name">Your Name</string>
 </resources>

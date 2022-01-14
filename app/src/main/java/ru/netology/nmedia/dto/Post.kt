@@ -4,6 +4,7 @@ import androidx.room.Embedded
 
 data class Post(
     val id: Long,
+    val authorId: Long,
     val author: String,
     val authorAvatar: String,
     val content: String,
@@ -11,8 +12,8 @@ data class Post(
     var likedByMe: Boolean,
     var likes: Int = 0,
     var viewed: Boolean = false,
-    val attachment: Attachment? = null
-
+    val attachment: Attachment? = null,
+    val ownedByMe: Boolean = false,
 )
 
 data class Attachment(
