@@ -1,14 +1,12 @@
 package ru.netology.nmedia.dto
 
-import androidx.room.Embedded
-
 data class Post(
     val id: Long,
     val authorId: Long,
     val author: String,
     val authorAvatar: String,
     val content: String,
-    val published: String,
+    val published: Long,
     var likedByMe: Boolean,
     var likes: Int = 0,
     var viewed: Boolean = false,
