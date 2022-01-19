@@ -15,7 +15,7 @@ data class PostEntity(
     val author: String,
     val authorAvatar: String,
     val content: String,
-    val published: String,
+    val published: Long,
     var likedByMe: Boolean,
     val likes: Int = 0,
     var viewed: Boolean,
@@ -54,19 +54,7 @@ data class PostEntity(
     }
 }
 
-data class AttachmentEmbeddable(
-    var url: String,
-    var description: String?,
-    var type: AttachmentType,
-) {
-    fun toDto() = Attachment(url, description, type)
 
-    companion object {
-        fun fromDto(dto: Attachment?) = dto?.let {
-            AttachmentEmbeddable(it.url, it.description, it.type)
-        }
-    }
-}
 
 
 fun List<PostEntity>.toDto(): List<Post> = map(PostEntity::toDto)
