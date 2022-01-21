@@ -64,7 +64,7 @@ class PostViewHolder(
             when (post.attachment?.type) {
                 AttachmentType.IMAGE -> {
                     Glide.with(attachment)
-                        .load("http://10.0.2.2:9999/media/${post.attachment?.url}")
+                        .load("http://10.0.2.2:9999/media/${post.attachment.url}")
                         .timeout(10_000)
                         .into(attachment)
                 }

@@ -22,23 +22,28 @@ import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppError
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class PostRepositoryImpl(private val dao: PostDao,
-                         private val postWorkDao: PostWorkDao,
+@Singleton
+class PostRepositoryImpl @Inject constructor(
+    private val postDao: PostDao,
+    private val postWorkDao: PostWorkDao,
+    private val apiService: ApiService,
 ) : PostRepository {
-    override val data = dao.getAll()
+    override val data = postDao.getAll()
         .map(List<PostEntity>::toDto)
         .flowOn(Dispatchers.Default)
 
     override suspend fun getAll() {
         try {
-            val response = Api.service.getAll()
+            val response = apiService.getAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
 
             val data = response.body() ?: throw ApiError(response.code(), response.message())
-            dao.insert(data.toEntity().map {
+            postDao.insert(data.toEntity().map {
                 it.copy(viewed = true)
             })
         } catch (e: IOException) {
@@ -51,13 +56,13 @@ class PostRepositoryImpl(private val dao: PostDao,
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {
             delay(10_000L)
-            val response = Api.service.getNewer(id)
+            val response = apiService.getNewer(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            dao.insert(body.toEntity()
+            postDao.insert(body.toEntity()
                 .map {
                 it.copy(viewed = false)
             })
@@ -70,7 +75,7 @@ class PostRepositoryImpl(private val dao: PostDao,
 
     override suspend fun loadNewPosts() {
         try {
-            dao.loadNewPosts()
+            postDao.loadNewPosts()
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -80,13 +85,12 @@ class PostRepositoryImpl(private val dao: PostDao,
 
     override suspend fun save(post: Post) {
         try {
-            val response = Api.service.save(post)
+            val response = apiService.save(post)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
-
             val data = response.body() ?: throw ApiError(response.code(), response.message())
-            dao.insert(PostEntity.fromDto(data))
+            postDao.insert(PostEntity.fromDto(data))
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -94,10 +98,11 @@ class PostRepositoryImpl(private val dao: PostDao,
         }
     }
 
+
     override suspend fun removeById(id: Long) {
         try {
-            dao.removeById(id)
-            val response = Api.service.removeById(id)
+            postDao.removeById(id)
+            val response = apiService.removeById(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -110,14 +115,14 @@ class PostRepositoryImpl(private val dao: PostDao,
 
     override suspend fun likeById(id: Long) {
         try {
-            dao.likeById(id)
-            val response = Api.service.likeById(id)
+            postDao.likeById(id)
+            val response = apiService.likeById(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
 
             val data = response.body() ?: throw ApiError(response.code(), response.message())
-            dao.insert(PostEntity.fromDto(data))
+            postDao.insert(PostEntity.fromDto(data))
 
         } catch (e: IOException) {
             throw NetworkError
@@ -128,14 +133,13 @@ class PostRepositoryImpl(private val dao: PostDao,
 
     override suspend fun dislikeById(id: Long) {
         try {
-            dao.dislikeById(id)
-            val response = Api.service.dislikeById(id)
+            postDao.dislikeById(id)
+            val response = apiService.dislikeById(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
-
             val data = response.body() ?: throw ApiError(response.code(), response.message())
-            dao.insert(PostEntity.fromDto(data))
+            postDao.insert(PostEntity.fromDto(data))
 
         } catch (e: IOException) {
             throw NetworkError
@@ -164,7 +168,7 @@ class PostRepositoryImpl(private val dao: PostDao,
                 "file", upload.file.name, upload.file.asRequestBody()
             )
 
-            val response = Api.service.upload(media)
+            val response = apiService.upload(media)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -181,7 +185,7 @@ class PostRepositoryImpl(private val dao: PostDao,
         try {
             val entity = PostWorkEntity.fromDto(post).apply {
                 if (upload != null) {
-                    this.uri = upload.file.toUri().toString()
+                    this.attachment?.url = upload.file.toUri().toString()
                 }
             }
             return postWorkDao.insert(entity)
@@ -192,12 +196,12 @@ class PostRepositoryImpl(private val dao: PostDao,
 
     override suspend fun processWork(id: Long) {
         try {
+            val post = postWorkDao.getById(id).toDto()
             val entity = postWorkDao.getById(id)
-            val post = entity.toDto()
             if (entity.uri != null) {
                 val upload = MediaUpload(Uri.parse(entity.uri).toFile())
                 saveWithAttachment(post, upload)
-            }else {
+            }else{
                 save(post)
             }
             postWorkDao.removeById(id)
