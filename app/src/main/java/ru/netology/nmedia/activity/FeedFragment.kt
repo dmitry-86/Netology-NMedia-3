@@ -20,15 +20,24 @@ import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
+import androidx.paging.LoadState
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.collectLatest
+import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.repository.PostRepository
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class FeedFragment : Fragment() {
 
-    private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+    @Inject
+    lateinit var repository: PostRepository
 
+    @Inject
+    lateinit var auth: AppAuth
+    private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
     private val authViewModel: AuthViewModel by viewModels()
 
-    @SuppressLint("SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -75,11 +84,29 @@ class FeedFragment : Fragment() {
 
         binding.list.adapter = adapter
 
-        viewModel.data.observe(viewLifecycleOwner, { state ->
-            adapter.submitList(state.posts)
-            binding.emptyText.isVisible = state.empty
-            binding.swiperefresh.isRefreshing
-        })
+//        viewModel.data.observe(viewLifecycleOwner, { state ->
+//            adapter.submitList(state.posts)
+//            binding.emptyText.isVisible = state.empty
+//            binding.swiperefresh.isRefreshing
+//        })
+
+        lifecycleScope.launchWhenCreated {
+            viewModel.data.collectLatest(adapter::submitData)
+        }
+
+        lifecycleScope.launchWhenCreated {
+            adapter.loadStateFlow.collectLatest { state ->
+                binding.swiperefresh.isRefreshing =
+                    state.refresh is LoadState.Loading ||
+                    state.prepend is LoadState.Loading ||
+                    state.append is LoadState.Loading
+            }
+        }
+
+        binding.swiperefresh.setOnRefreshListener(adapter::refresh)
+
+        authViewModel.data.observe(viewLifecycleOwner) { adapter.refresh() }
+
 
         viewModel.dataState.observe(viewLifecycleOwner, { state ->
             binding.progress.isVisible = state.loading
@@ -91,39 +118,10 @@ class FeedFragment : Fragment() {
             }
         })
 
-        viewModel.newerCount.observe(viewLifecycleOwner) {
-            with(binding.newPosts) {
-                if (it > 0) {
-                    text = "${getString(R.string.new_posts)} - $it"
-                    visibility = View.VISIBLE
-                }
-            }
-        }
-
         binding.newPosts.setOnClickListener {
             binding.newPosts.visibility = View.GONE
             viewModel.loadNewPosts()
         }
-
-//        binding.retryButton.setOnClickListener {
-//            viewModel.loadPosts()
-//        }
-
-        binding.swiperefresh.setOnRefreshListener {
-            viewModel.refreshPosts()
-        }
-
-        viewModel.data.observe(viewLifecycleOwner, { state ->
-            adapter.submitList(state.posts)
-            binding.emptyText.isVisible = state.empty
-
-            val addingNewPost = adapter.itemCount < state.posts.size
-            adapter.submitList(state.posts){
-                if(addingNewPost){
-                    binding.list.scrollToPosition(0)
-                }
-            }
-        })
 
         binding.fab.setOnClickListener {
             if(authViewModel.authenticated) {
