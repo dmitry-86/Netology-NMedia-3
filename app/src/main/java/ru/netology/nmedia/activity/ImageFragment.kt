@@ -7,9 +7,11 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.BuildConfig.BASE_URL
 import ru.netology.nmedia.databinding.FragmentImageBinding
 
+@AndroidEntryPoint
 class ImageFragment : Fragment() {
     override fun onStart() {
         super.onStart()

@@ -9,16 +9,24 @@ import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
+import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.auth.AppAuth
+import javax.inject.Inject
 import kotlin.random.Random
 
-
+@AndroidEntryPoint
 class FCMService : FirebaseMessagingService() {
     private val action = "action"
     private val content = "content"
     private val channelId = "remote"
     private val gson = Gson()
+    @Inject
+    lateinit var auth: AppAuth
+
+//    @Inject
+//    lateinit var apiService: ApiService
 
     override fun onCreate() {
         super.onCreate()
@@ -37,18 +45,18 @@ class FCMService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         message.data[action]?.let {
             val push = gson.fromJson(message.data[content], Push::class.java)
-            val userId = AppAuth.getInstance().authStateFlow.value.id
+            val userId = auth.authStateFlow.value.id
 
             when (push.recipientId) {
                 userId, null -> handlePush(push)
-                else -> AppAuth.getInstance().sendPushToken()
+                else -> auth.sendPushToken()
             }
         }
     }
 
 
     override fun onNewToken(token: String) {
-        AppAuth.getInstance().sendPushToken(token)
+        auth.sendPushToken(token)
     }
 
     private fun handlePush(content: Push) {
@@ -69,34 +77,3 @@ data class Push(
     val recipientId: Long?,
     val content: String
 )
-
-
-//    private fun handleLike(content: Like) {
-//        val notification = NotificationCompat.Builder(this, channelId)
-//            .setSmallIcon(R.drawable.ic_notification)
-//            .setContentTitle(
-//                getString(
-//                    R.string.notification_user_liked,
-//                    content.userName,
-//                    content.postAuthor,
-//                )
-//            )
-//            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-//            .build()
-//
-//        NotificationManagerCompat.from(this)
-//            .notify(Random.nextInt(100_000), notification)
-//    }
-//}
-//
-//enum class Action {
-//    LIKE,
-//}
-//
-//data class Like(
-//    val userId: Long,
-//    val userName: String,
-//    val postId: Long,
-//    val postAuthor: String,
-//)
-

@@ -7,12 +7,18 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentSignInBinding
 import ru.netology.nmedia.viewmodel.SignInViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class SignInFragment : Fragment() {
+
+    @Inject
+    lateinit var auth: AppAuth
 
 
     override fun onCreateView(
@@ -31,7 +37,7 @@ class SignInFragment : Fragment() {
         }
 
         viewModel.data.observe(viewLifecycleOwner, {
-            AppAuth.getInstance().setAuth(it.id, it.token)
+            auth.setAuth(it.id, it.token)
             findNavController().navigateUp()
         })
 
