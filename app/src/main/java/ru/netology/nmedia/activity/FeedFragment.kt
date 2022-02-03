@@ -84,12 +84,6 @@ class FeedFragment : Fragment() {
 
         binding.list.adapter = adapter
 
-//        viewModel.data.observe(viewLifecycleOwner, { state ->
-//            adapter.submitList(state.posts)
-//            binding.emptyText.isVisible = state.empty
-//            binding.swiperefresh.isRefreshing
-//        })
-
         lifecycleScope.launchWhenCreated {
             viewModel.data.collectLatest(adapter::submitData)
         }
