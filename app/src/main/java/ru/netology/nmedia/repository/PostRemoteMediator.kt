@@ -27,12 +27,13 @@ class PostRemoteMediator(
     ): MediatorResult {
         try {
             val response = when (loadType) {
-                LoadType.REFRESH -> service.getLatest(state.config.initialLoadSize)
+                LoadType.REFRESH -> {
+                    postRemoteKeyDao.max()?.let {
+                        service.getAfter(it, state.config.pageSize)
+                    } ?: service.getLatest(state.config.initialLoadSize)
+                }
                 LoadType.PREPEND -> {
-                    val id = postRemoteKeyDao.max() ?: return MediatorResult.Success(
-                        endOfPaginationReached = false
-                    )
-                    service.getAfter(id, state.config.pageSize)
+                    return MediatorResult.Success(true)
                 }
                 LoadType.APPEND -> {
                     val id = postRemoteKeyDao.min() ?: return MediatorResult.Success(
@@ -53,20 +54,20 @@ class PostRemoteMediator(
             db.withTransaction {
                 when (loadType) {
                     LoadType.REFRESH -> {
-//                      postRemoteKeyDao.removeAll()
-                        postRemoteKeyDao.insert(
-//                            listOf(
+                      postRemoteKeyDao.insert(
+                            listOfNotNull(
                                 PostRemoteKeyEntity(
                                     type = PostRemoteKeyEntity.KeyType.AFTER,
                                     id = body.first().id,
-                                )
-//                                PostRemoteKeyEntity(
-//                                    type = PostRemoteKeyEntity.KeyType.BEFORE,
-//                                    id = body.last().id,
-//                                ),
+                                ),
+                                PostRemoteKeyEntity(
+                                    type = PostRemoteKeyEntity.KeyType.BEFORE,
+                                    id = body.last().id,
+                                ).takeIf {
+                                    postRemoteKeyDao.isEmpty()
+                                },
                             )
-//                        )
-//                        postDao.removeAll()
+                        )
                     }
 
                     LoadType.PREPEND -> {
