@@ -3,30 +3,26 @@ package ru.netology.nmedia.viewmodel
 import android.net.Uri
 import androidx.core.net.toFile
 import androidx.lifecycle.*
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
-import androidx.paging.map
+import androidx.paging.*
 import androidx.work.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.dto.Ad
+import ru.netology.nmedia.dto.FeedItem
 import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
-import ru.netology.nmedia.repository.*
+import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.util.SingleLiveEvent
 import ru.netology.nmedia.work.RemovePostWorker
 import ru.netology.nmedia.work.SavePostWorker
 import java.io.File
 import javax.inject.Inject
+import kotlin.random.Random
 
 private val empty = Post(
     id = 0,
@@ -39,7 +35,6 @@ private val empty = Post(
     published = 0L,
     viewed = false,
     attachment = null,
-
 )
 
 private val noPhoto = PhotoModel()
@@ -51,11 +46,31 @@ class PostViewModel @Inject constructor(
     private val workManager: WorkManager,
     auth: AppAuth,
         ): ViewModel() {
-    private val cached = repository
-        .data
-        .cachedIn(viewModelScope)
+    private val cached: Flow<PagingData<FeedItem>> = repository
+    .data
+    .map { pagingData ->
+        pagingData.insertSeparators(
+            generator = { before, after ->
+                if (before?.id?.rem(5) != 0L) null else
+                    Ad(
+                        Random.nextLong(),
+                        "https://netology.ru",
+                        "figma.jpg"
+                    )
+            }
+        )
+    }
+    .cachedIn(viewModelScope)
 
-    val data: Flow<PagingData<Post>> = cached
+    val data: Flow<PagingData<FeedItem>> = auth.authStateFlow
+    .flatMapLatest { (myId, _) ->
+        cached
+            .map { pagingData ->
+                pagingData.map { item ->
+                    if (item !is Post) item else item.copy(ownedByMe = item.authorId == myId)
+                }
+            }
+    }
 
     private val _dataState = MutableLiveData<FeedModelState>()
     val dataState: LiveData<FeedModelState>
@@ -88,6 +103,16 @@ class PostViewModel @Inject constructor(
         try {
             _dataState.value = FeedModelState(loading = true)
             repository.loadNewPosts()
+            _dataState.value = FeedModelState()
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
+        }
+    }
+
+    fun refreshPosts() = viewModelScope.launch {
+        try {
+            _dataState.value = FeedModelState(refreshing = true)
+//            repository.getAll()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)

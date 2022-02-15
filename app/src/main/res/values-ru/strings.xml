@@ -39,5 +39,5 @@
     <string name="repeat_your_password">Введите пароль еще раз</string>
     <string name="password_repeat">Повторение пароля</string>
     <string name="enter_your_name">Ваше имя</string>
-
+    <string name="ad_description">Реклама</string>
 </resources>
