@@ -35,12 +35,11 @@ class PagingLoadStateAdapter(
 
         fun bind(loadState: LoadState) {
             binding.apply {
-                progress.isVisible = loadState is LoadState.Loading
                 retry.isVisible = loadState is LoadState.Error
-
                 retry.setOnClickListener {
                     onInteractionListener.onRetry()
                 }
+                progress.isVisible = loadState is LoadState.Loading
             }
         }
     }

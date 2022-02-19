@@ -53,9 +53,8 @@ class PostRemoteMediator(
             db.withTransaction {
                 when (loadType) {
                     LoadType.REFRESH -> {
-                        postRemoteKeyDao.removeAll()
                         postRemoteKeyDao.insert(
-                            listOf(
+                            listOfNotNull(
                                 PostRemoteKeyEntity(
                                     type = PostRemoteKeyEntity.KeyType.AFTER,
                                     id = body.first().id,
@@ -63,10 +62,11 @@ class PostRemoteMediator(
                                 PostRemoteKeyEntity(
                                     type = PostRemoteKeyEntity.KeyType.BEFORE,
                                     id = body.last().id,
-                                ),
+                                ).takeIf {
+                                    postRemoteKeyDao.isEmpty()
+                                },
                             )
                         )
-                        postDao.removeAll()
                     }
                     LoadType.PREPEND -> {
                         postRemoteKeyDao.insert(
