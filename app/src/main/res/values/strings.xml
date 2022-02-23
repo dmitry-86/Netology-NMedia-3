@@ -38,4 +38,5 @@
     <string name="repeat_your_password">Please repeat your password</string>
     <string name="password_repeat">Repeat password</string>
     <string name="enter_your_name">Your Name</string>
+    <string name="ad_description">ad</string>
 </resources>
